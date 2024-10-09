@@ -9,6 +9,9 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 public class LoginUI {
 
     /**********************************************************************************************
@@ -59,7 +62,7 @@ public class LoginUI {
 
         // Login button
         setupButtonUI(loginButton, "Arial", 14, 75, Pos.CENTER, (Main.WINDOW_WIDTH - 75) / 2, 220);
-        loginButton.setOnAction(e -> handleLogin());
+        loginButton.setOnAction(e -> handleLogin(mainApp));
         
         // Invalid User/pass
         setupLabelUI(label_Error, "Arial", 14, Main.WINDOW_WIDTH - 10, Pos.CENTER, 0, 250);
@@ -124,14 +127,31 @@ public class LoginUI {
     /**********
      * Method to handle login logic when the login button is clicked
      */
-    private void handleLogin() {
+    private void handleLogin(Main mainApp) {
     	String username = text_Username.getText();
         String password = text_Password.getText();
         
-        // Login Logic **************
-        
-        label_Error.setText("*Invalid Username/Password");
-        
+        try {
+            // Retrieve user data by username
+            ResultSet rs = UserDatabase.getUserByUsername(username);
+
+            // Check if the user exists and if the password matches
+            if (rs.next()) { // If a user with the given username is found
+                String storedPassword = rs.getString("password");
+                if (storedPassword.equals(password)) {
+                    // Successful login, show the account page
+                    mainApp.showAccountPage();
+                } else {
+                    // Password does not match
+                    label_Error.setText("*Invalid Username/Password");
+                }
+            } else {
+                // User not found
+                label_Error.setText("*Invalid Username/Password");
+            }
+        } catch (SQLException e) {
+            label_Error.setText("*Database error: " + e.getMessage());
+        }
         
     }
     

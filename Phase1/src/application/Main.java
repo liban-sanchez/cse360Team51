@@ -1,10 +1,11 @@
 package application;
-	
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+import java.sql.SQLException;
 
 public class Main extends Application {
 	// Keep these attributes for access across methods
@@ -12,14 +13,15 @@ public class Main extends Application {
 	public final static double WINDOW_HEIGHT = 430;
 	public CreateAccUI cGUI;
 	public LoginUI lGUI;
+	public AccountLogicUI aGUI;
 	private Stage mainApp;   // Reference to the main Stage
+	
 
 	@Override
 	public void start(Stage theStage) throws Exception {
 		this.mainApp = theStage;  // Save a reference to the stage
-		boolean init = false;
 		
-		if (init) {
+		if (UserDatabase.isDatabaseEmpty()) {
 			showCreateAccountPage(false);
 		}
 		else {
@@ -45,8 +47,23 @@ public class Main extends Application {
 		Scene loginScene = new Scene(loginPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 		mainApp.setScene(loginScene); 
 	}
+	
+	// Method to display the Account page
+	public void showAccountPage(){
+		Pane accountPane = new Pane();
+		aGUI = new AccountLogicUI(accountPane, this);
+		Scene accountScene = new Scene(accountPane, WINDOW_WIDTH, WINDOW_HEIGHT);
+		mainApp.setScene(accountScene);
+	}
 
 	public static void main(String[] args) {
+		try {
+            UserDatabase.createTable();  // Initialize the table
+            UserDatabase.clearUsers();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 		launch(args);
 	}
+	
 }

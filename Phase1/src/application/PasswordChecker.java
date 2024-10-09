@@ -3,7 +3,7 @@ package application;
 /**
  * Default Constructor
  */
-public class Check {
+public class PasswordChecker {
 
 	/**
 	 * Initialize variables used 
@@ -86,7 +86,12 @@ public class Check {
 			else if ("~`!@#$%^&*()_-+={}[]|\\:;\"'<>,.?/".indexOf(currentChar) >= 0) {
 				includesSpecialchar = true;
 			} 
-
+			
+			if (index >= 7) {
+				System.out.println("At least 8 characters found");
+				sufficientLength= true;
+			}
+			
 			index++;
 			if (index >= input.length()) {
 				running = false;

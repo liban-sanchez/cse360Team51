@@ -8,6 +8,8 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+import java.sql.SQLException;
+
 public class CreateAccUI {
 
   /**********************************************************************************************
@@ -34,6 +36,7 @@ public class CreateAccUI {
   Label label_LongEnough = new Label("At least eight characters - Not yet satisfied");
   Label label_Match = new Label("Passwords match - Not yet satisfied");
   Label label_noAdmin = new Label("");
+  Label label_Error = new Label("");
   
   
   /**********************************************************************************************
@@ -55,19 +58,19 @@ public class CreateAccUI {
       setupLabelUI(label_Username, "Arial", 14, Main.WINDOW_WIDTH - 10, Pos.BASELINE_LEFT, 125, 100);
       setupTextUI(text_Username, "Arial", 18, Main.WINDOW_WIDTH - 250, Pos.BASELINE_LEFT, 125, 120, true);
       text_Username.textProperty().addListener((observable, oldValue, newValue) 
-				-> {label_noAdmin.setText("");});
+				-> {label_noAdmin.setText(""); label_Error.setText("");});
 
       // Label the Password input field with a title just above it, left aligned
       setupLabelUI(label_Password, "Arial", 14, Main.WINDOW_WIDTH - 10, Pos.BASELINE_LEFT, 125, 160);
       setupTextUI(text_Password, "Arial", 18, Main.WINDOW_WIDTH - 250, Pos.BASELINE_LEFT, 125, 180, true);
       text_Password.textProperty().addListener((observable, oldValue, newValue) 
-				-> {setPassword(); label_noAdmin.setText("");});
+				-> {setPassword(); label_noAdmin.setText(""); label_Error.setText("");});
       
       // Label the Confirm Password input field with a title just above it, left aligned
       setupLabelUI(label_Confirm, "Arial", 14, Main.WINDOW_WIDTH - 10, Pos.BASELINE_LEFT, 125, 220);
       setupTextUI(text_Confirm, "Arial", 18, Main.WINDOW_WIDTH - 250, Pos.BASELINE_LEFT, 125, 240, true);
       text_Confirm.textProperty().addListener((observable, oldValue, newValue) 
-				-> {checkMatch(); label_noAdmin.setText("");});
+				-> {checkMatch(); label_noAdmin.setText(""); label_Error.setText("");});
       
       // Position the requirements assessment display for each required aspect
       setupLabelUI(label_Requirements, "Arial", 8, Main.WINDOW_WIDTH - 10, Pos.BASELINE_LEFT, 140, 320);
@@ -99,6 +102,10 @@ public class CreateAccUI {
       // Missing Admin Warning
       setupLabelUI(label_noAdmin, "Arial", 8, Main.WINDOW_WIDTH - 10, Pos.BASELINE_LEFT, 90, 402);
       label_noAdmin.setTextFill(Color.RED);
+      
+      // Error label
+      setupLabelUI(label_Error, "Arial", 8, Main.WINDOW_WIDTH - 10, Pos.BASELINE_LEFT, 90, 420); 
+      label_Error.setTextFill(Color.RED);
       
       // Create Account button
       setupButtonUI(createAccButton, "Arial", 14, 100, Pos.CENTER, 190, 280);
@@ -186,7 +193,7 @@ public class CreateAccUI {
       if (!(inputText.isEmpty())) {
           // There is input to process.  Call the evaluatePassword method to assess each of the
           // remaining criteria 
-          String errMessage = PasswordEvaluator.evaluatePassword(inputText);
+          String errMessage = PasswordChecker.checkPassword(inputText);
           updateFlags();				// Check for each criteria and set the GUI for that element
 			// to green with the criteria satisfied
           if (errMessage != "") {
@@ -194,9 +201,8 @@ public class CreateAccUI {
               System.out.println(errMessage); // Display the error message on the console
           }
           // If no error message was found, check to see if all the criteria has been met
-          else if (PasswordEvaluator.foundUpperCase && PasswordEvaluator.foundLowerCase &&
-                  PasswordEvaluator.foundNumericDigit && PasswordEvaluator.foundSpecialChar &&
-                  PasswordEvaluator.foundLongEnough) {
+          else if (PasswordChecker.includesUppercase && PasswordChecker.includesLowercase &&
+        		  PasswordChecker.includesNum && PasswordChecker.includesSpecialchar && PasswordChecker.sufficientLength) {
               // All the criteria have been met. display the success message to the console
               System.out.println("Success! The password satisfies the requirements.");
           }
@@ -236,31 +242,31 @@ public class CreateAccUI {
    */
   private void updateFlags() {
       // Upper case character
-      if (PasswordEvaluator.foundUpperCase) {
+      if (PasswordChecker.includesUppercase) {
           label_UpperCase.setText("At least one upper case letter - Satisfied");
           label_UpperCase.setTextFill(Color.GREEN);
       }
 
       // Lower case character
-      if (PasswordEvaluator.foundLowerCase) {
+      if (PasswordChecker.includesLowercase) {
           label_LowerCase.setText("At least one lower case letter - Satisfied");
           label_LowerCase.setTextFill(Color.GREEN);
       }
 
       // Numeric character
-      if (PasswordEvaluator.foundNumericDigit) {
+      if (PasswordChecker.includesNum) {
           label_NumericDigit.setText("At least one numeric digit - Satisfied");
           label_NumericDigit.setTextFill(Color.GREEN);
       }
 
       // Special character
-      if (PasswordEvaluator.foundSpecialChar) {
+      if (PasswordChecker.includesSpecialchar) {
           label_SpecialChar.setText("At least one special character - Satisfied");
           label_SpecialChar.setTextFill(Color.GREEN);
       }
 
       // Not long enough
-      if (PasswordEvaluator.foundLongEnough) {
+      if (PasswordChecker.sufficientLength) {
           label_LongEnough.setText("At least eight characters - Satisfied");
           label_LongEnough.setTextFill(Color.GREEN);
       }
@@ -274,14 +280,19 @@ public class CreateAccUI {
       String username = text_Username.getText();
       String password = text_Password.getText();
 
-      if (username.length() > 4 && PasswordEvaluator.foundUpperCase && PasswordEvaluator.foundLowerCase &&
-              PasswordEvaluator.foundNumericDigit && PasswordEvaluator.foundSpecialChar &&
-              PasswordEvaluator.foundLongEnough && text_Password.getText().equals(text_Confirm.getText())) {
+      // Check if Username is valid and password meets the criteria
+      if (username.length() > 4 && PasswordChecker.includesUppercase && PasswordChecker.includesLowercase &&
+    		  PasswordChecker.includesNum && PasswordChecker.includesSpecialchar && PasswordChecker.sufficientLength
+    		  && text_Password.getText().equals(text_Confirm.getText())) {
     	  
-    	  
-    	  // Add Username Passcode to data base
-    	  
-    	  mainApp.showLoginPage();
+    	  try {
+              // Add Username and Password to the database and return to login page
+              UserDatabase.insertUser(username, password, null, null, null, null);
+              mainApp.showLoginPage();
+          } catch (SQLException e) {
+              // Handle SQL exceptions
+              label_Error.setText("*Error saving user: " + e.getMessage());
+          }
       }
   }
   
