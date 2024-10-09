@@ -6,23 +6,13 @@ package application;
 public class Testing {
 	
 	/**
-	 * Main
+	 * Main. Password is entered here
 	 */
 	public static void main(String[] args) {
 		System.out.println("Requirements for Password: \n8 or more characters, \nat least one upper case letter, \nat least one lower case letter, \nat least numerical value, \nand at least one special character");
 		System.out.println("____________________________________________________________________________");
 
-		performPaswwordChecker("Aa!15678");
-
-		performPaswwordChecker("A!");
-		
-		performPaswwordChecker("Aa!15678");
-		
-		performPaswwordChecker("A!");
-		
-		performPaswwordChecker("");
-		
-		performPaswwordChecker("kevin");
+		performPaswwordChecker("Kevin");	//This where password is entered
 
 		
 		System.out.println("____________________________________________________________________________");
