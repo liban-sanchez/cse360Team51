@@ -34,7 +34,7 @@ public class Testing {
 	 * @param input is the password that is entered
 	 */
 	private static void performPaswwordChecker(String input) {
-		System.out.println("\nInput: \"" + input + "\"");
+		System.out.println("\nChecking Password");
 		
 		
 		Check.checkPassword(input);
