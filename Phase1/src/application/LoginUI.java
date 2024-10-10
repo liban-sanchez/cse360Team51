@@ -41,7 +41,11 @@ public class LoginUI {
 
     /**********
      * This method initializes all of the elements of the graphical user interface. These assignments
-     * determine the location, size, font, color, and change and event handlers for each GUI object.
+     * determine the UI and event handlers for each GUI object.
+     *
+     * @param loginPane The Pane to which UI elements are added.
+     * @param mainApp The main application instance to navigate between scenes.
+     * @param ot_code The OneTimeCode instance for managing invite codes.
      */
     public LoginUI(Pane loginPane, Main mainApp, OneTimeCode ot_code) {
 
@@ -125,9 +129,13 @@ public class LoginUI {
     }
 
     /**********
-     * Method to handle login logic when the login button is clicked
+     * Method to handle login logic when the login button is clicked.
+     *
+     * @param mainApp The main application instance for navigation.
+     * @param ot_code The OneTimeCode instance for invite code validation.
      */
     private void handleLogin(Main mainApp, OneTimeCode ot_code) {
+    	// Get username, password, and resetCode from text fields
     	String username = text_Username.getText();
         String password = text_Password.getText();
         String resetCode = text_InviteCode.getText();
@@ -136,23 +144,27 @@ public class LoginUI {
             // Retrieve user data by username
             ResultSet rs = UserDatabase.getUserByUsername(username);
 
-            // Check if the user exists and if the password matches
-            if (rs.next()) { // If a user with the given username is found
+            // Check if the username exists
+            if (rs.next()) {
                 String storedPassword = rs.getString("password");
                 String email = rs.getString("email");
+                
+                // Check the password is correct
                 if (storedPassword.equals(password)) {
-                	 if (email == null || email.isEmpty()) {
-                         // User has not set their email, finish user setUp
+                	// Check if user has not set their email, meaning they must finish user setUp
+                	if (email == null || email.isEmpty()) {
                          mainApp.showFinishPage(username);
-                     } 
-                	 else {
-                         // User has already set their name, proceed with login
-                         mainApp.showSystemUI(username, rs.getString("role"));
-                     }
+                    }
+                	// User has already set their email, proceed with login to system
+                	else {
+                		// The Role determines the system display and functionality
+                        mainApp.showSystemUI(username, rs.getString("role"));
+                    }
                 } 
+                // Check if password was a password reset
                 else if (ot_code.validateResetCode(resetCode)) {
                     // If the invite code is valid, go to update password page
-                	ot_code.useResetCode(resetCode);
+                	ot_code.useResetCode(resetCode);	// Remove reset code
                     //mainApp.showUpdatePasswordUI();
                 }
                 else {
@@ -161,7 +173,7 @@ public class LoginUI {
                 }
             } 
             else {
-                // User not found
+                // Username not found
                 label_Error.setText("*Invalid Username/Password");
             }
         } catch (SQLException e) {
@@ -171,17 +183,23 @@ public class LoginUI {
     }
     
     /**********
-     * Method to handle Create Account logic when the login button is clicked
+     * Method to handle account creation logic when the create account button is clicked.
+     *
+     * @param mainApp The main application instance for navigation.
+     * @param ot_code The OneTimeCode instance for invite code management.
      */
     private void handleCreateAcc(Main mainApp, OneTimeCode ot_code) {
     	String inviteCode = text_InviteCode.getText();
     	
     	// Check if the invite code is valid
         if (ot_code.validateInviteCode(inviteCode)) {
-        	String inviteRole = ot_code.getInviteCodeRole(inviteCode);	// Invite code roll
+        	// Assign role from invite code
+        	String inviteRole = ot_code.getInviteCodeRole(inviteCode);	
         	ot_code.useInviteCode(inviteCode);
-            mainApp.showCreateAccountPage(inviteRole); // Proceed to create account page
+        	 // Proceed to create account page
+            mainApp.showCreateAccountPage(inviteRole);
         } else {
+        	// Invalid Invite Code
             label_InviteError.setText("*Invalid Invite Code.");
         }
     }

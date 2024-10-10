@@ -9,6 +9,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
+/**
+ * Represents the system interface for administrative actions within the application.
+ * Provides functionalities for user management, including inviting users,
+ * resetting passwords, deleting users, listing accounts, and managing user roles.
+ */
 public class SystemUI {
 
     // Common UI components
@@ -23,17 +28,27 @@ public class SystemUI {
     Button removeRoleButton = new Button("Remove Role");
     Label label_CommandStatus = new Label();
 
+    /**
+     * Constructs the SystemUI and initializes the layout and functionalities
+     * based on the user's role.
+     *
+     * @param systemPane  The pane where the UI elements will be displayed.
+     * @param mainApp    The main application to navigate between pages.
+     * @param ot_code    The instance of OneTimeCode used for generating codes.
+     * @param role       The role of the user (Admin, Instructor, etc.).
+     */
     public SystemUI(Pane systemPane, Main mainApp, OneTimeCode ot_code, String role) {
 
-        // Layout setup
+    	// Layout setup using a GridPane for structured arrangement
         GridPane grid = new GridPane();
         grid.setPadding(new Insets(10, 10, 10, 10));
         grid.setVgap(8);
         grid.setHgap(10);
-
+        
+        // Add logout button to the grid layout
         GridPane.setConstraints(logoutButton, 0, 0);
 
-        // Add different buttons based on user role
+        // Different buttons based on user role
         if (role.equals("Admin")) {
             // Admin-only buttons
             GridPane.setConstraints(inviteButton, 0, 1);
@@ -49,7 +64,7 @@ public class SystemUI {
                 listUsersButton, addRoleButton, removeRoleButton, label_CommandStatus
             );
 
-            // Set button actions
+            // Assign actions to Admin-specific buttons
             inviteButton.setOnAction(e -> handleInviteUser(ot_code));
             resetPassword.setOnAction(e -> handleResetPassword(ot_code));
             deleteUserButton.setOnAction(e -> handleDeleteUser());
@@ -61,13 +76,19 @@ public class SystemUI {
         // Logout button is common for all roles
         logoutButton.setOnAction(e -> mainApp.showLoginPage());
 
+        // Add all components to the system pane
         grid.getChildren().add(logoutButton);
         systemPane.getChildren().add(grid);
     }
 
- // Invite User: Generates a one-time invite code based on selected roles (Student/Instructor)
+    /**
+     * Generates a one-time invite code for a new user based on selected roles
+     * (Student/Instructor). Prompts the admin to select a role before generating.
+     *
+     * @param ot_code The instance of OneTimeCode used for generating invite codes.
+     */
     private void handleInviteUser(OneTimeCode ot_code) {
-        // Create a dialog for admin input
+    	// Dialog for admin input to select user role
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Invite User");
         dialog.setHeaderText("Select a role");
@@ -109,7 +130,7 @@ public class SystemUI {
                     codeAlert.setContentText("Role: " + newRole + "\nInvite Code: " + inviteCode);
                     codeAlert.showAndWait();
                 } else {
-                    // No role selected
+                	// Warning alert for no role selected
                     Alert noRoleAlert = new Alert(Alert.AlertType.WARNING);
                     noRoleAlert.setTitle("No Role Selected");
                     noRoleAlert.setHeaderText(null);
@@ -120,14 +141,19 @@ public class SystemUI {
         });
     }
 
-    // Reset User Password.
+    /**
+     * Resets the password for a specified user. Prompts the admin for the username,
+     * generates a reset code, and displays it.
+     *
+     * @param ot_code The instance of OneTimeCode used for generating reset codes.
+     */
     private void handleResetPassword(OneTimeCode ot_code) {
-        // Create a dialog for admin input
+    	// Dialog for admin input to reset user password
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Reset User Password");
         dialog.setHeaderText("Enter the username for password reset");
 
-        // Create a text field for username input
+        // Text field for username input
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
 
@@ -148,15 +174,16 @@ public class SystemUI {
                 String username = usernameField.getText().trim();
                 if (!username.isEmpty()) {
                     // Generate reset code using OneTimeCode or your logic
-                    String resetCode = ot_code.generateResetCode(); // Assuming this method exists
-
+                    String resetCode = ot_code.generateResetCode(); 
+                    
+                    // Display the reset code information
                     Alert codeAlert = new Alert(Alert.AlertType.INFORMATION);
                     codeAlert.setTitle("Reset Code Generated");
                     codeAlert.setHeaderText("Reset code for user:");
                     codeAlert.setContentText("Username: " + username + "\nReset Code: " + resetCode);
                     codeAlert.showAndWait();
                 } else {
-                    // No username entered
+                	// Warning alert for no username entered
                     Alert noUsernameAlert = new Alert(Alert.AlertType.WARNING);
                     noUsernameAlert.setTitle("No Username Entered");
                     noUsernameAlert.setHeaderText(null);
@@ -167,14 +194,17 @@ public class SystemUI {
         });
     }
 
-    // Delete User: Prompts admin with confirmation before deleting a user.
+    /**
+     * Deletes a user account from the database. Prompts the admin for the username
+     * and email, verifies input, and executes the deletion.
+     */
     private void handleDeleteUser() {
-    	// Create a dialog for admin input
+    	// Dialog for admin input to delete user
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Delete User");
         dialog.setHeaderText("Enter the username and email of the user to delete");
 
-        // Create text fields for username and email input
+        // Text fields for username and email input
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
         TextField emailField = new TextField();
@@ -223,9 +253,14 @@ public class SystemUI {
         });
     }
 
- // List Users: Displays all user accounts with usernames and roles.
+    /**
+     * Lists all user accounts in the system, displaying their usernames and roles.
+     * Retrieves the user data from the database and formats it for display.
+     * Shows an alert dialog with the list of user accounts or an error message if retrieval fails.
+     */
     private void handleListUsers() {
         try {
+        	// Fetch all users
             ResultSet resultSet = UserDatabase.getAllUsers(); // Fetch all users
             StringBuilder userList = new StringBuilder("User Accounts:\n");
             
@@ -246,17 +281,23 @@ public class SystemUI {
         }
     }
 
- // Add Role: Allows admin to add a role to a user.
+    /**
+     * Allows the admin to add a role to an existing user. 
+     * Prompts the admin for the username and the new role, 
+     * verifies input, and updates the user's roles in the database.
+     */
     private void handleAddRole() {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Add Role");
         dialog.setHeaderText("Enter the username and role to add");
-
+        
+        // Input fields for the username and role
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
         TextField roleField = new TextField();
         roleField.setPromptText("Role (e.g., Student, Instructor)");
 
+        // Create a grid layout to arrange the input fields
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -265,22 +306,31 @@ public class SystemUI {
         grid.add(new Label("Role:"), 0, 1);
         grid.add(roleField, 1, 1);
 
+        // Set the content of the dialog to the grid
         dialog.getDialogPane().setContent(grid);
+        // Add buttons for OK and Cancel
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+        // Show the dialog and handle the response
         dialog.showAndWait().ifPresent(response -> {
+        	// Check if the OK button was pressed
             if (response == ButtonType.OK) {
+            	// Get trimmed username input
                 String username = usernameField.getText().trim();
+                // Get trimmed role input
                 String role = roleField.getText().trim();
 
+                // Validate input fields are not empty
                 if (!username.isEmpty() && !role.isEmpty()) {
                     try {
+                    	// Add role to the user in the database
                         UserDatabase.addRoleToUser(username, role);
                         label_CommandStatus.setText("Role added successfully.");
                     } catch (SQLException e) {
                         label_CommandStatus.setText("Error adding role: " + e.getMessage());
                     }
                 } else {
+                	// Alert user if inputs are empty
                     Alert noInputAlert = new Alert(Alert.AlertType.WARNING);
                     noInputAlert.setTitle("Input Required");
                     noInputAlert.setHeaderText(null);
@@ -291,17 +341,23 @@ public class SystemUI {
         });
     }
 
- // Remove Role: Allows admin to remove a role from a user.
+    /**
+     * Allows the admin to remove a role from a user. 
+     * Prompts the admin for the username and the role to be removed, 
+     * verifies input, and updates the user's roles in the database.
+     */
     private void handleRemoveRole() {
         Dialog<ButtonType> dialog = new Dialog<>();
         dialog.setTitle("Remove Role");
         dialog.setHeaderText("Enter the username and role to remove");
 
+        // Input fields for the username and role
         TextField usernameField = new TextField();
         usernameField.setPromptText("Username");
         TextField roleField = new TextField();
         roleField.setPromptText("Role");
 
+        // Create a grid layout to arrange the input fields
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -310,9 +366,12 @@ public class SystemUI {
         grid.add(new Label("Role:"), 0, 1);
         grid.add(roleField, 1, 1);
 
+        // Set the content of the dialog to the grid
         dialog.getDialogPane().setContent(grid);
+        // Add buttons for OK and Cancel
         dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
 
+        // Show the dialog and handle the response
         dialog.showAndWait().ifPresent(response -> {
             if (response == ButtonType.OK) {
                 String username = usernameField.getText().trim();
