@@ -12,7 +12,6 @@ public class Testing {
 		System.out.println("Requirements for Password: \n8 or more characters, \nat least one upper case letter, \nat least one lower case letter, \nat least numerical value, \nand at least one special character");
 		System.out.println("____________________________________________________________________________");
 
-		performPaswwordChecker("Kevin");	//This where password is entered
 
 		
 		System.out.println("____________________________________________________________________________");
