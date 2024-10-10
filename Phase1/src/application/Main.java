@@ -13,8 +13,9 @@ public class Main extends Application {
 	public final static double WINDOW_HEIGHT = 430;
 	public CreateAccUI cGUI;
 	public LoginUI lGUI;
-	public AccountLogicUI aGUI;
+	public FinishUI fGUI;
 	private Stage mainApp;   // Reference to the main Stage
+	private OneTimeCode ot_code;
 	
 
 	@Override
@@ -43,17 +44,17 @@ public class Main extends Application {
 	// Method to display the Login page
 	public void showLoginPage() {
 		Pane loginPane = new Pane();
-		lGUI = new LoginUI(loginPane, this);   // Implement LoginUI as needed
+		lGUI = new LoginUI(loginPane, this, ot_code);   // Implement LoginUI as needed
 		Scene loginScene = new Scene(loginPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 		mainApp.setScene(loginScene); 
 	}
 	
 	// Method to display the Account page
-	public void showAccountPage(){
-		Pane accountPane = new Pane();
-		aGUI = new AccountLogicUI(accountPane, this);
-		Scene accountScene = new Scene(accountPane, WINDOW_WIDTH, WINDOW_HEIGHT);
-		mainApp.setScene(accountScene);
+	public void showFinishPage(String username){
+		Pane finishPane = new Pane();
+		fGUI = new FinishUI(finishPane, this, username);
+		Scene finishScene = new Scene(finishPane, WINDOW_WIDTH, WINDOW_HEIGHT);
+		mainApp.setScene(finishScene);
 	}
 
 	public static void main(String[] args) {

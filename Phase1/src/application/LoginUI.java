@@ -43,7 +43,7 @@ public class LoginUI {
      * This method initializes all of the elements of the graphical user interface. These assignments
      * determine the location, size, font, color, and change and event handlers for each GUI object.
      */
-    public LoginUI(Pane loginPane, Main mainApp) {
+    public LoginUI(Pane loginPane, Main mainApp, OneTimeCode ot_code) {
 
     	// Label with the "Login" centered at the top of the pane
         setupLabelUI(label_ApplicationTitle, "Arial", 24, Main.WINDOW_WIDTH - 5, Pos.CENTER, 0, 50);
@@ -62,7 +62,7 @@ public class LoginUI {
 
         // Login button
         setupButtonUI(loginButton, "Arial", 14, 75, Pos.CENTER, (Main.WINDOW_WIDTH - 75) / 2, 220);
-        loginButton.setOnAction(e -> handleLogin(mainApp));
+        loginButton.setOnAction(e -> handleLogin(mainApp, ot_code));
         
         // Invalid User/pass
         setupLabelUI(label_Error, "Arial", 14, Main.WINDOW_WIDTH - 10, Pos.CENTER, 0, 250);
@@ -75,7 +75,7 @@ public class LoginUI {
 
         // Create Account button
         setupButtonUI(createAccButton, "Arial", 14, 125, Pos.CENTER, (Main.WINDOW_WIDTH - 125) / 2, 340);
-        createAccButton.setOnAction(e -> handleCreateAcc(mainApp));
+        createAccButton.setOnAction(e -> handleCreateAcc(mainApp, ot_code));
         label_Error.setTextFill(Color.RED);
 
         // Invalid invite code
@@ -127,9 +127,10 @@ public class LoginUI {
     /**********
      * Method to handle login logic when the login button is clicked
      */
-    private void handleLogin(Main mainApp) {
+    private void handleLogin(Main mainApp, OneTimeCode ot_code) {
     	String username = text_Username.getText();
         String password = text_Password.getText();
+        String resetCode = text_InviteCode.getText();
         
         try {
             // Retrieve user data by username
@@ -138,14 +139,29 @@ public class LoginUI {
             // Check if the user exists and if the password matches
             if (rs.next()) { // If a user with the given username is found
                 String storedPassword = rs.getString("password");
+                String email = rs.getString("email");
                 if (storedPassword.equals(password)) {
-                    // Successful login, show the account page
-                    mainApp.showAccountPage();
-                } else {
+                	 if (email == null || email.isEmpty()) {
+                         // User has not set their email, finish user setUp
+                         mainApp.showFinishPage(username);
+                     } 
+                	 else {
+                         // User has already set their name, proceed with login
+                         //mainApp.showHomePage(); 
+                		 label_Error.setText("*Account Setup");
+                     }
+                } 
+                else if (ot_code.validateResetCode(resetCode)) {
+                    // If the invite code is valid, go to update password page
+                	ot_code.useResetCode(resetCode);
+                    //mainApp.showUpdatePasswordUI();
+                }
+                else {
                     // Password does not match
                     label_Error.setText("*Invalid Username/Password");
                 }
-            } else {
+            } 
+            else {
                 // User not found
                 label_Error.setText("*Invalid Username/Password");
             }
@@ -158,14 +174,15 @@ public class LoginUI {
     /**********
      * Method to handle Create Account logic when the login button is clicked
      */
-    private void handleCreateAcc(Main mainApp) {
+    private void handleCreateAcc(Main mainApp, OneTimeCode ot_code) {
     	String inviteCode = text_InviteCode.getText();
     	
-    	boolean match = true;	// temporary
-    	
-        if (!match) {
-        	label_InviteError.setText("*Invalid Invite Code.");
-        	return;
+    	// Check if the invite code is valid
+        if (ot_code.validateInviteCode(inviteCode)) {
+        	ot_code.useInviteCode(inviteCode);
+            mainApp.showCreateAccountPage(true); // Proceed to create account page
+        } else {
+            label_InviteError.setText("*Invalid Invite Code.");
         }
     	mainApp.showCreateAccountPage(true);
     }
