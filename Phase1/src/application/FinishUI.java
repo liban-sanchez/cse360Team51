@@ -15,8 +15,8 @@ public class FinishUI {
     Label label_PreferredName = new Label("Preferred Name:");
     TextField text_PreferredName = new TextField();
     
-    Label label_Email = new Label("Email:"); // Add email label
-    TextField text_Email = new TextField();  // Add email text field
+    Label label_Email = new Label("Email:"); 
+    TextField text_Email = new TextField();  
     
     Button submitButton = new Button("Submit");
     Label label_Error = new Label();
@@ -36,8 +36,8 @@ public class FinishUI {
         GridPane.setConstraints(label_PreferredName, 0, 3);
         GridPane.setConstraints(text_PreferredName, 1, 3);
         
-        GridPane.setConstraints(label_Email, 0, 4);  // Add email label to layout
-        GridPane.setConstraints(text_Email, 1, 4);   // Add email field to layout
+        GridPane.setConstraints(label_Email, 0, 4);
+        GridPane.setConstraints(text_Email, 1, 4);
         
         GridPane.setConstraints(submitButton, 1, 5);
         GridPane.setConstraints(label_Error, 1, 6);
@@ -47,7 +47,7 @@ public class FinishUI {
 
         grid.getChildren().addAll(label_FirstName, text_FirstName, label_MiddleName, text_MiddleName,
                                   label_LastName, text_LastName, label_PreferredName, text_PreferredName,
-                                  label_Email, text_Email, // Add email field and label to the grid
+                                  label_Email, text_Email, 
                                   submitButton, label_Error);
 
         accountPane.getChildren().add(grid);
@@ -58,7 +58,7 @@ public class FinishUI {
         String middleName = text_MiddleName.getText();
         String lastName = text_LastName.getText();
         String preferredName = text_PreferredName.getText();
-        String email = text_Email.getText(); // Get email from input field
+        String email = text_Email.getText();
 
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()) {
             label_Error.setText("Please fill in all required fields.");

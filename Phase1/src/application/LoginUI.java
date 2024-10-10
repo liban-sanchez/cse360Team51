@@ -147,8 +147,7 @@ public class LoginUI {
                      } 
                 	 else {
                          // User has already set their name, proceed with login
-                         //mainApp.showHomePage(); 
-                		 label_Error.setText("*Account Setup");
+                         mainApp.showSystemUI(username, rs.getString("role"));
                      }
                 } 
                 else if (ot_code.validateResetCode(resetCode)) {
@@ -179,11 +178,11 @@ public class LoginUI {
     	
     	// Check if the invite code is valid
         if (ot_code.validateInviteCode(inviteCode)) {
+        	String inviteRole = ot_code.getInviteCodeRole(inviteCode);	// Invite code roll
         	ot_code.useInviteCode(inviteCode);
-            mainApp.showCreateAccountPage(true); // Proceed to create account page
+            mainApp.showCreateAccountPage(inviteRole); // Proceed to create account page
         } else {
             label_InviteError.setText("*Invalid Invite Code.");
         }
-    	mainApp.showCreateAccountPage(true);
     }
 }

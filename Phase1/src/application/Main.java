@@ -11,19 +11,24 @@ public class Main extends Application {
 	// Keep these attributes for access across methods
 	public final static double WINDOW_WIDTH = 500;
 	public final static double WINDOW_HEIGHT = 430;
+	
+	// References
+	private Stage mainApp;  
 	public CreateAccUI cGUI;
 	public LoginUI lGUI;
 	public FinishUI fGUI;
-	private Stage mainApp;   // Reference to the main Stage
+	public SystemUI sGUI;
 	private OneTimeCode ot_code;
 	
 
 	@Override
 	public void start(Stage theStage) throws Exception {
-		this.mainApp = theStage;  // Save a reference to the stage
+		 // Save a reference to the stage
+		this.mainApp = theStage;
+		this.ot_code = new OneTimeCode();
 		
 		if (UserDatabase.isDatabaseEmpty()) {
-			showCreateAccountPage(false);
+			showCreateAccountPage("Admin");
 		}
 		else {
 			showLoginPage();
@@ -34,9 +39,9 @@ public class Main extends Application {
 	}
 
 	// Method to display the Create Account page
-	public void showCreateAccountPage(boolean admin) {
+	public void showCreateAccountPage(String role) {
 		Pane createAccPane = new Pane();
-		cGUI = new CreateAccUI(createAccPane, this, admin);   // Pass reference to Main
+		cGUI = new CreateAccUI(createAccPane, this, role);   // Pass reference to Main
 		Scene createAccScene = new Scene(createAccPane, WINDOW_WIDTH, WINDOW_HEIGHT);
 		mainApp.setScene(createAccScene); 
 	}
@@ -49,7 +54,7 @@ public class Main extends Application {
 		mainApp.setScene(loginScene); 
 	}
 	
-	// Method to display the Account page
+	// Method to display the finish account page
 	public void showFinishPage(String username){
 		Pane finishPane = new Pane();
 		fGUI = new FinishUI(finishPane, this, username);
@@ -60,11 +65,19 @@ public class Main extends Application {
 	public static void main(String[] args) {
 		try {
             UserDatabase.createTable();  // Initialize the table
-            UserDatabase.clearUsers();
+            // Use to reset if needed
+            //UserDatabase.clearUsers();	
         } catch (SQLException e) {
             e.printStackTrace();
         }
 		launch(args);
 	}
+	
+	public void showSystemUI(String username, String role) {
+        Pane systemPane = new Pane();
+        SystemUI sysUI = new SystemUI(systemPane, this, ot_code, role);
+        Scene systemScene = new Scene(systemPane, WINDOW_WIDTH, WINDOW_HEIGHT);
+        mainApp.setScene(systemScene);
+    }
 	
 }

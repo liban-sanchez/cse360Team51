@@ -49,7 +49,7 @@ public class CreateAccUI {
    * This method initializes all of the elements of the graphical user interface. These assignments
    * determine the location, size, font, color, and change and event handlers for each GUI object.
    */
-  public CreateAccUI(Pane createAccPane, Main mainApp, boolean admin) {
+  public CreateAccUI(Pane createAccPane, Main mainApp, String role) {
 
       // Label with the "Create Account" centered at the top of the pane
       setupLabelUI(label_ApplicationTitle, "Arial", 24, Main.WINDOW_WIDTH - 5, Pos.CENTER, 0, 50);
@@ -109,11 +109,11 @@ public class CreateAccUI {
       
       // Create Account button
       setupButtonUI(createAccButton, "Arial", 14, 100, Pos.CENTER, 190, 280);
-      createAccButton.setOnAction(e -> handleCreateAcc(mainApp)); // Switch to login page
+      createAccButton.setOnAction(e -> handleCreateAcc(mainApp, role)); // Switch to login page
       
       // Return to Login button
       setupButtonUI(returnButton, "Arial", 8, 30, Pos.CENTER, 20, 400);
-      returnButton.setOnAction(e -> handleReturnToLogin(mainApp, admin)); // Switch to login page
+      returnButton.setOnAction(e -> handleReturnToLogin(mainApp)); // Switch to login page
 
       // Add all UI elements to the pane
       createAccPane.getChildren().addAll(label_ApplicationTitle, label_Username, text_Username,
@@ -276,7 +276,7 @@ public class CreateAccUI {
   /**********
    * Method to handle login logic when the login button is clicked
    */
-  private void handleCreateAcc(Main mainApp) {
+  private void handleCreateAcc(Main mainApp, String role) {
       String username = text_Username.getText();
       String password = text_Password.getText();
 
@@ -287,7 +287,7 @@ public class CreateAccUI {
     	  
     	  try {
               // Add Username and Password to the database and return to login page
-              UserDatabase.insertUser(username, password, null, null, null, null);
+              UserDatabase.insertUser(username, password, null, null, null, role);
               mainApp.showLoginPage();
           } catch (SQLException e) {
               // Handle SQL exceptions
@@ -299,8 +299,8 @@ public class CreateAccUI {
   /**********
    * Method to handle Create Account logic when the login button is clicked
    */
-  private void handleReturnToLogin(Main mainApp, boolean admin) {
-      if (!admin) {
+  private void handleReturnToLogin(Main mainApp) {
+      if (UserDatabase.isDatabaseEmpty()) {
     	  label_noAdmin.setText("*Must Create Admin Account");
     	  return;
       }

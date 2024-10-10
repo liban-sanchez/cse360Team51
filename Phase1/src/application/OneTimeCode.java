@@ -2,31 +2,34 @@ package application;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
+import java.util.Random;
 
 public class OneTimeCode {
+	private Random random;
     // Maps to store one-time codes and their details
-    private Map<String, CodeDetails> inviteCodes; // For invite codes
-    private Map<String, CodeDetails> resetCodes;  // For password reset codes
+    private Map<String, CodeInfo> inviteCodes; // For invite codes
+    private Map<String, CodeInfo> resetCodes;  // For password reset codes
 
     public OneTimeCode() {
+    	this.random = new Random();
         inviteCodes = new HashMap<>();
         resetCodes = new HashMap<>();
     }
 
     // Method to generate an invite code with expiration time and role
     public String generateInviteCode(String role) {
-        String code = UUID.randomUUID().toString(); // Generate a unique code
+    	int num = (10000 + random.nextInt(90000));
+        String code = String.valueOf(num); // Generate a unique code
         long expirationTime = System.currentTimeMillis() + 300000; // 5 minutes expiration
-        inviteCodes.put(code, new CodeDetails(role, expirationTime, false));
+        inviteCodes.put(code, new CodeInfo(role, expirationTime, false));
         return code;
     }
 
     // Method to validate an invite code
     public boolean validateInviteCode(String code) {
-        CodeDetails details = inviteCodes.get(code);
+        CodeInfo details = inviteCodes.get(code);
         if (details == null || details.isUsed()) {
-            return false; // Code does not exist or has been used
+            return false; 
         }
         if (System.currentTimeMillis() > details.getExpirationTime()) {
             return false; // Code has expired
@@ -36,49 +39,56 @@ public class OneTimeCode {
 
     // Mark the invite code as used and remove it
     public void useInviteCode(String code) {
-        CodeDetails details = inviteCodes.get(code);
+        CodeInfo details = inviteCodes.get(code);
         if (details != null) {
             details.setUsed(true);
             inviteCodes.remove(code); // Remove the code from the map after use
         }
     }
 
-    // Method to generate a one-time password (for password reset)
+    // Method to generate a one-time password (for password reset code)
     public String generateResetCode() {
-        String code = UUID.randomUUID().toString(); // Generate a unique reset code
+    	int num = (10000 + random.nextInt(90000));
+        String code = String.valueOf(num);
         long expirationTime = System.currentTimeMillis() + 300000; // 5 minutes expiration
-        resetCodes.put(code, new CodeDetails(null, expirationTime, false)); // No role associated
+        resetCodes.put(code, new CodeInfo(null, expirationTime, false)); // No role associated
         return code;
     }
 
     // Method to validate the password reset code
     public boolean validateResetCode(String code) {
-        CodeDetails details = resetCodes.get(code);
+        CodeInfo details = resetCodes.get(code);
         if (details == null || details.isUsed()) {
-            return false; // Code does not exist or has been used
+            return false;
         }
         if (System.currentTimeMillis() > details.getExpirationTime()) {
-            return false; // Code has expired
+            return false;
         }
-        return true; // Code is valid and not used
+        return true;
     }
 
     // Mark the reset code as used and remove it
     public void useResetCode(String code) {
-        CodeDetails details = resetCodes.get(code);
+        CodeInfo details = resetCodes.get(code);
         if (details != null) {
             details.setUsed(true);
             resetCodes.remove(code); // Remove the code from the map after use
         }
     }
+    
+    // Method to get the role associated with an invite code
+    public String getInviteCodeRole(String code) {
+        CodeInfo details = inviteCodes.get(code);
+        return (details != null) ? details.getRole() : null; // Return the role or null if not found
+    }
 
     // Class to represent the code details
-    public class CodeDetails {
-        private String role; // Role for invite code
-        private long expirationTime; // Expiration time of the code
-        private boolean used; // Indicates if the code has been used
+    public class CodeInfo {
+        private String role; 
+        private long expirationTime; 
+        private boolean used;
 
-        public CodeDetails(String role, long expirationTime, boolean used) {
+        public CodeInfo(String role, long expirationTime, boolean used) {
             this.role = role;
             this.expirationTime = expirationTime;
             this.used = used;

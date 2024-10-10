@@ -4,35 +4,26 @@ import java.sql.*;
 
 public class UserDatabase {
     private static final String DB_URL = "jdbc:h2:~/userDatabase";
-    
-    private static final String JDBC_URL = "jdbc:h2:~/test"; // You can change 'test' to your database name
     private static final String USER = "sa";
     private static final String PASSWORD = "";
 
     // Initialize the H2 database connection
     public static Connection connectDatabase() throws SQLException {
-        return DriverManager.getConnection(JDBC_URL, USER, PASSWORD);
-    }
-    
-    public static void dropTable() throws SQLException {
-        String dropQuery = "DROP TABLE IF EXISTS users";
-        try (Connection conn = connectDatabase(); Statement stmt = conn.createStatement()) {
-            stmt.execute(dropQuery);
-        }
+        return DriverManager.getConnection(DB_URL, USER, PASSWORD);
     }
     
     // Create the users table
     public static void createTable() throws SQLException {
-    	dropTable();
+    	//dropTable();
         String userInfo = "CREATE TABLE IF NOT EXISTS users (" +
                           "id INT AUTO_INCREMENT PRIMARY KEY, " +
                           "username VARCHAR(255) UNIQUE, " +
                           "password VARCHAR(255), " +
                           "email VARCHAR(255), " +
                           "first_name VARCHAR(255), " +
-                          "middle_name VARCHAR(255), " +  // Added middle name
+                          "middle_name VARCHAR(255), " + 
                           "last_name VARCHAR(255), " +
-                          "preferred_name VARCHAR(255), " + // Added preferred name
+                          "preferred_name VARCHAR(255), " + 
                           "role VARCHAR(50))";
         try (Connection conn = connectDatabase(); Statement stmt = conn.createStatement()) {
             stmt.execute(userInfo);
@@ -56,16 +47,14 @@ public class UserDatabase {
         }
     }
     
-    // Retrieve user data
-    public static ResultSet getUserByUsername(String username) throws SQLException {
-        String userInfo = "SELECT * FROM users WHERE username = ?";
-        Connection conn = connectDatabase();
-        PreparedStatement pstmt = conn.prepareStatement(userInfo);
-        pstmt.setString(1, username);
-        return pstmt.executeQuery();
+    public static void dropTable() throws SQLException {
+        String dropQuery = "DROP TABLE IF EXISTS users";
+        try (Connection conn = connectDatabase(); Statement stmt = conn.createStatement()) {
+            stmt.execute(dropQuery);
+        }
     }
     
-    // Clear the database 
+    // Clear the database if needed
     public static void clearUsers() {
         String deleteQuery = "DELETE FROM users";
         try (Connection conn = connectDatabase(); Statement stmt = conn.createStatement()) {
@@ -76,6 +65,29 @@ public class UserDatabase {
         }
     }
     
+    // Delete a user from the database
+    public static boolean deleteUser(String username, String email) throws SQLException {
+        String deleteQuery = "DELETE FROM users WHERE username = ? AND email = ?";
+        try (Connection conn = connectDatabase(); PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, email);
+            int rowsDeleted = pstmt.executeUpdate();
+            return rowsDeleted > 0; // Return true if a user was deleted
+        } catch (SQLException e) {
+            System.err.println("Error deleting user: " + e.getMessage());
+            return false;
+        }
+    }
+    
+    // Retrieve user data
+    public static ResultSet getUserByUsername(String username) throws SQLException {
+        String userInfo = "SELECT * FROM users WHERE username = ?";
+        Connection conn = connectDatabase();
+        PreparedStatement pstmt = conn.prepareStatement(userInfo);
+        pstmt.setString(1, username);
+        return pstmt.executeQuery();
+    }
+    
     // Check if the database is empty
     public static boolean isDatabaseEmpty() {
         String countQuery = "SELECT COUNT(*) FROM users";
@@ -84,12 +96,40 @@ public class UserDatabase {
             
             ResultSet rs = pstmt.executeQuery();
             if (rs.next()) {
-                return rs.getInt(1) == 0; // Returns true if no users exist
+                return rs.getInt(1) == 0; 
             }
         } catch (SQLException e) {
             System.err.println("Error checking database: " + e.getMessage());
         }
-        return false; // In case of an error, assume the database is not empty
+        return false; 
+    }
+    
+ // Retrieve all users from the database
+    public static ResultSet getAllUsers() throws SQLException {
+        String query = "SELECT username, role FROM users";
+        Connection conn = connectDatabase();
+        PreparedStatement pstmt = conn.prepareStatement(query);
+        return pstmt.executeQuery();
+    }
+
+    // Add role to a user
+    public static void addRoleToUser(String username, String role) throws SQLException {
+        String updateQuery = "UPDATE users SET role = ? WHERE username = ?";
+        try (Connection conn = connectDatabase(); PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+            pstmt.setString(1, role);
+            pstmt.setString(2, username);
+            pstmt.executeUpdate();
+        }
+    }
+
+    // Remove role from a user
+    public static void removeRoleFromUser(String username, String role) throws SQLException {
+        String updateQuery = "UPDATE users SET role = NULL WHERE username = ? AND role = ?";
+        try (Connection conn = connectDatabase(); PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, role);
+            pstmt.executeUpdate();
+        }
     }
     
  // Update user details (first name, middle name, last name, preferred name, email)
@@ -101,11 +141,11 @@ public class UserDatabase {
             pstmt.setString(2, middleName);
             pstmt.setString(3, lastName);
             pstmt.setString(4, preferredName);
-            pstmt.setString(5, email); // Set the email field
-            pstmt.setString(6, username); // Set the username
+            pstmt.setString(5, email); 
+            pstmt.setString(6, username);
             
             int rowsUpdated = pstmt.executeUpdate();
-            return rowsUpdated > 0; // Returns true if at least one row was updated
+            return rowsUpdated > 0;
         } catch (SQLException e) {
             System.err.println("Error updating user details: " + e.getMessage());
             return false;
